@@ -61,7 +61,7 @@ function Footer() {
                     fontWeight="medium"
                     _hover={{ color: 'accent.solid', textDecoration: 'none' }}
                 >
-                    <Link to={'/itineraries'}>Itineraries</Link>
+                    <Link to={'/cities'}>Cities</Link>
                 </ChakraLink>
             </HStack>
         </Flex>

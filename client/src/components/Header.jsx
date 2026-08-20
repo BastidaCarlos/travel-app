@@ -68,7 +68,7 @@ function Header() {
                 fontWeight="medium"
                 _hover={{ color: 'accent.solid', textDecoration: 'none' }}
             >
-                <Link to={'/itineraries'}>Itineraries</Link>
+                <Link to={'/cities'}>Cities</Link>
             </ChakraLink>
         </HStack>
         
@@ -133,7 +133,7 @@ function Header() {
                                 _hover={{ color: 'accent.solid', textDecoration: 'none' }}
                                 onClick={() => setOpen(false)}
                             >
-                                <Link to={'/itineraries'}>Itineraries</Link>
+                                <Link to={'/cities'}>Cities</Link>
                             </ChakraLink>
                         </VStack>
                     </Drawer.Body>
