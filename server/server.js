@@ -4,6 +4,8 @@ import dotenv from "dotenv";
 import connectDB from "./config/db.js";
 import citiesRouter from "./routes/cities.js";
 import itinerariesRouter from "./routes/itineraries.js";
+import authRoutes from "./routes/auth.js"
+import usersRouter from "./routes/users.js"
 
 dotenv.config();
 
@@ -15,6 +17,10 @@ app.use(express.json());
 
 app.use("/api/cities", citiesRouter);
 app.use("/api/itineraries", itinerariesRouter);
+
+app.use("/api/users", usersRouter);
+
+app.use("/api/auth", authRoutes);
 
 connectDB();
 
