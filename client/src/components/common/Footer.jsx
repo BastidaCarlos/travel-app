@@ -1,3 +1,5 @@
+import { useAuth } from "../../hooks/useAuth"
+import { Link } from "react-router";
 import { 
     Flex,
     Text,
@@ -6,10 +8,10 @@ import {
     VStack,
     Link as ChakraLink
  } from "@chakra-ui/react";
-import Logo from "../assets/Logo.png";
-import { Link } from "react-router";
+import Logo from "../../assets/Logo.png";
 
 function Footer() {
+    const { user } = useAuth();
     return(
         <Flex 
             as="footer"
@@ -45,15 +47,7 @@ function Footer() {
                     fontWeight="medium"
                     _hover={{ color: 'accent.solid', textDecoration: 'none' }}
                 >
-                    <Link to={'/'}>Landing</Link>
-                </ChakraLink>
-
-                <ChakraLink
-                    asChild
-                    fontWeight="medium"
-                    _hover={{ color: 'accent.solid', textDecoration: 'none' }}
-                >
-                    <Link to={'/login'}>Login</Link>
+                    <Link to={'/'}>Home</Link>
                 </ChakraLink>
 
                 <ChakraLink
@@ -62,6 +56,20 @@ function Footer() {
                     _hover={{ color: 'accent.solid', textDecoration: 'none' }}
                 >
                     <Link to={'/cities'}>Cities</Link>
+                </ChakraLink>
+
+                <ChakraLink
+                    asChild
+                    fontWeight="medium"
+                    _hover={{ color: 'accent.solid', textDecoration: 'none' }}
+                >
+                    { !user ? (
+                        <Link to={'/login'}>Log In</Link>
+                    ) : user.role === 'admin' ? (
+                        <Link to={'/admin/dashboard'}>Admin Dashboard</Link>
+                    ) : (
+                        <Link to={'/profile/me'}>Profile</Link>
+                    )}
                 </ChakraLink>
             </HStack>
         </Flex>

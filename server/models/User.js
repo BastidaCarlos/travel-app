@@ -7,6 +7,10 @@ const userSchema = new Schema(
             required: [true, 'The name is required'],
             trim: true
         },
+        bio: {
+            type: String,
+            maxlength: [200, 'The bio cannot exceed 250 characters']
+        },
         email: {
             type: String,
             required: [true, 'The email is required'],

@@ -1,8 +1,8 @@
 import User from "../models/User.js";
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
-import { OAuth2Client } from 'google-auth-library';
 import nodemailer from 'nodemailer';
+import axios from 'axios';
 
 export const register = async (req, res) => {
     try {
@@ -113,23 +113,20 @@ export const googleLogin = async (req,res) => {
         const { token } = req.body;
 
         if (!token) {
-           return res.status(400).json({
-                error: 'Google token is required'
-           }) 
+           return res.status(400).json({ error: 'Google token required'}) 
         }
 
-        const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+        const googleResponse = await axios.get('https://www.googleapis.com/oauth2/v3/userinfo', {
+            headers: { Authorization: `Bearer ${token}` }
+        });
 
-        const ticket = await client.verifyIdToken({
-            idToken: token,
-            audience: process.env.GOOGLE_CLIENT_ID
-        })
+        const { email, name, picture, sub } = googleResponse.data;
 
-        const payload = ticket.getPayload();
+        if (!email) {
+           return res.status(400).json({ error: 'Failed to retrieve email from Google'}) 
+        }
 
-        const { email, name, picture, sub } = payload;
-
-        let user = await User.findOne({ email });
+        let user = await User.findOne({ email })
         let targetUser;
 
         if (!user) {
@@ -138,28 +135,31 @@ export const googleLogin = async (req,res) => {
                 email: email,
                 avatar: picture,
                 googleId: sub
-           } 
+           }; 
 
            const newUser = new User(userData);
            targetUser = await newUser.save();
         } else {
             if (!user.googleId) {
-               user.googleId = sub; 
+                user.googleId = sub;
 
-               if (picture) user.avatar = picture;
+                if (picture && !user.avatar) {
+                    user.avatar = picture;
+                }
 
-               await user.save();
+                await user.save();
             }
             targetUser = user;
         }
 
-        const jwtToken = jwt.sign({
+        const jwtToken = jwt.sign(
+            {
                 id: targetUser._id,
                 role: targetUser.role,
             },
             process.env.JWT_SECRET,
             { expiresIn: '1d' }
-        )
+        );
 
         return res.status(200).json({
             message: 'Login succesful',
@@ -171,10 +171,11 @@ export const googleLogin = async (req,res) => {
                 avatar: targetUser.avatar,
                 role: targetUser.role
             }
-        })
+        });
 
     } catch (error) {
-       return res.status(500).json({ error: 'Internal server error' }) 
+        console.error('Google auth error: ', error.response?.data || error.message);
+        return res.status(401).json({ error: 'Invalid Google token or authorization failed'})
     }
 }
 
@@ -203,11 +204,11 @@ export const updateProfile = async (req, res) => {
     try {
         const id = req.user.id;
 
-        const { name, avatar } = req.body;
+        const { name, avatar, bio } = req.body;
 
         const updateUser = await User.findByIdAndUpdate(
             id,
-            { name, avatar },
+            { name, avatar, bio },
             { new: true }
         ).select('-password');
 
@@ -222,17 +223,17 @@ export const updateProfile = async (req, res) => {
     }
 }
 
-const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: {
-        user: process.env.GMAIL_USER,
-        pass: process.env.GMAIL_PASS 
-    }
-});
-
 export const forgotPassword = async (req, res) => {
     try {
         const { email } = req.body;
+
+        const transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_PASS 
+            }
+        });
 
         if (!email) {
            return res.status(400).json({ error: 'Email is required'}) 
@@ -281,6 +282,7 @@ export const forgotPassword = async (req, res) => {
         return res.status(200).json({ message: "If the email address exists, you'll receive a link" }) 
 
     } catch (error) {
+        console.error(error)
         return res.status(500).json({ error: 'Internal server error'})
     }
 
