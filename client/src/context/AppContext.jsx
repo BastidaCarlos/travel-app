@@ -19,7 +19,7 @@ export function AppProvider({ children }) {
             setCitiesIsLoading(true);
             setCitiesError(null);
 
-            const responseCities = await fetch('http://localhost:5000/api/cities');
+            const responseCities = await fetch(`${import.meta.env.VITE_API_URL}/cities`);
             
             if (!responseCities.ok) {
                const errorData = await responseCities.json(); 
@@ -44,7 +44,7 @@ export function AppProvider({ children }) {
             setItinerariesIsLoading(true);
             setItinerariesError(null);
 
-            const responseItineraries = await fetch(`http://localhost:5000/api/itineraries/${cityId}`)
+            const responseItineraries = await fetch(`${import.meta.env.VITE_API_URL}/${cityId}`)
 
             if (!responseItineraries.ok) {
                 const errorData = await responseItineraries.json()
